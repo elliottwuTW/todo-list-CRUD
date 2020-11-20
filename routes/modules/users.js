@@ -6,6 +6,8 @@ const passport = require('passport')
 
 const User = require('../../models').User
 
+const checkRegisterInfo = require('../../middleware/checkRegisterInfo')
+
 router.get('/login', (req, res) => {
   res.render('login')
 })
@@ -22,13 +24,17 @@ router.get('/register', (req, res) => {
   res.render('register')
 })
 
-router.post('/register', (req, res) => {
-  const { name, email, password, confirmPassword } = req.body
+router.post('/register', checkRegisterInfo, (req, res) => {
+  const { name, email, password } = req.body
 
   User.findOne({ where: { email } }).then((user) => {
     // 已註冊
     if (user) {
-      return res.render('register', { name, email })
+      return res.render('register', {
+        name,
+        email,
+        registerErrors: [{ msg: 'email 已經被註冊!' }]
+      })
     }
     // 建立使用者
     bcrypt
@@ -41,17 +47,15 @@ router.post('/register', (req, res) => {
           password: hash
         })
       )
-      .then(() => res.redirect('/'))
+      .then(() => res.redirect('/uers/login'))
       .catch((err) => console.error(err))
   })
-
-  const user = req.body
-  delete user.confirmPassword
-  User.create(user).then((user) => res.redirect('/'))
 })
 
 router.get('/logout', (req, res) => {
-  res.send('logout')
+  req.logout()
+  req.flash('logout_success', '登出成功')
+  res.redirect('/users/login')
 })
 
 module.exports = router

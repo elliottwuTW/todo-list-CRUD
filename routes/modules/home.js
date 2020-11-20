@@ -5,10 +5,11 @@ const Todo = require('../../models').Todo
 
 router.get('/', (req, res) => {
   Todo.findAll({
-    raw: true
+    raw: true,
+    nest: true
   })
     .then((todos) => res.render('index', { todos }))
-    .catch((err) => res.status(500).json(err))
+    .catch((err) => console.error(err))
 })
 
 module.exports = router
