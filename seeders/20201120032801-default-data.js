@@ -10,6 +10,9 @@ const SEED_USER = {
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     // 建立 User
+    const salt = await bcrypt.genSalt(10)
+    const hash = await bcrypt.hash(SEED_USER.password, salt)
+    SEED_USER.password = hash
     const userId = await queryInterface.bulkInsert('Users', [
       { ...SEED_USER, createdAt: new Date(), updatedAt: new Date() }
     ])
