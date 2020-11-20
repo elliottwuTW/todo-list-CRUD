@@ -1,6 +1,8 @@
 const express = require('express')
 const router = express.Router()
 
+const bcrypt = require('bcryptjs')
+
 const User = require('../../models').User
 
 router.get('/login', (req, res) => {
@@ -16,8 +18,27 @@ router.get('/register', (req, res) => {
 })
 
 router.post('/register', (req, res) => {
-  console.log('User: ', User)
-  console.log('typeof User: ', typeof User)
+  const { name, email, password, confirmPassword } = req.body
+
+  User.findOne({ where: { email } }).then((user) => {
+    // 已註冊
+    if (user) {
+      return res.render('register', { name, email })
+    }
+    // 建立使用者
+    bcrypt
+      .genSalt(10)
+      .then((salt) => bcrypt.hash(password, salt))
+      .then((hash) =>
+        User.create({
+          name,
+          email,
+          password: hash
+        })
+      )
+      .then(() => res.redirect('/'))
+      .catch((err) => console.error(err))
+  })
 
   const user = req.body
   delete user.confirmPassword
