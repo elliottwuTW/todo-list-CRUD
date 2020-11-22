@@ -5,6 +5,7 @@ const Todo = require('../../models').Todo
 
 router.get('/', (req, res) => {
   Todo.findAll({
+    where: { userId: req.user.id },
     raw: true,
     nest: true
   })
